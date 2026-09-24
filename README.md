@@ -4,7 +4,15 @@
 
 It runs on your own server. Local models through Ollama are the default; Anthropic Claude and Google Gemini can be assigned to specific kinds of work.
 
-<!-- screenshots -->
+![Chat with the code](screenshots/chat.jpg)
+
+> Screenshots show a demo instance with sample data.
+
+| Ticket | Board |
+|---|---|
+| ![Ticket with acceptance criteria, steps and affected files](screenshots/ticket.jpg) | ![Kanban board filtered to the active sprint](screenshots/board.jpg) |
+
+![Sprint planning with backlog and story points](screenshots/sprint-planning.jpg)
 
 ## Features
 
