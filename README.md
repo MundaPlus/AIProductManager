@@ -1,51 +1,62 @@
 # AI Product Manager
 
-> A self-hosted platform that gives software teams an AI-powered product manager — turning codebases into living documentation, structured tickets, and automated development workflows, with all data staying on your own infrastructure.
+**A self-hosted product-management workspace that reads your codebase and helps plan, write and test changes to it.** AI Product Manager indexes a software project, answers questions about it with references to the source, generates technical and product documentation, and turns plain-language requests into structured tickets. Tickets can then move through an AI pipeline that specifies, plans, implements and tests the change, with a person approving each step.
 
-![Status](https://img.shields.io/badge/status-beta-yellow)
+It runs on your own server. Local models through Ollama are the default; Anthropic Claude and Google Gemini can be assigned to specific kinds of work.
 
-## Overview
+<!-- screenshots -->
 
-Development teams lose enormous amounts of time to undocumented codebases, poorly specified tickets, and the mental overhead of context-switching between tools. AI Product Manager addresses this by connecting directly to a source repository, understanding its structure, and acting as an intelligent layer between the codebase and the team.
+## Features
 
-It runs entirely on-premises — no data leaves your servers, no SaaS subscription, no vendor lock-in. Teams can query their own code in plain language, generate documentation automatically, plan work through AI-assisted tickets, and even delegate routine implementation tasks to an AI agent that operates under human supervision at every step.
+- **Codebase scanning.** Walks a local folder or cloned git repository, classifies files (with specific rules for Laravel, Django and Next.js), chunks them and embeds them in a per-project vector store. Re-scans only re-embed files whose hash changed, and a file watcher can trigger them automatically.
+- **Chat with the code.** Streaming answers grounded in retrieved code, with source references. A separate investigation agent explores one area in several steps and writes a report.
+- **Generated documentation.** A six-pass pipeline produces per-file and per-module analysis, API surface, data layer, services and an architecture overview. A second generator builds feature-level product documentation from a knowledge base of extra files, URLs and repositories.
+- **Symbol graph.** Functions, classes and call relationships extracted with tree-sitter and shown as a dependency graph.
+- **Tickets.** Generate a ticket from a description, with acceptance criteria, implementation steps, affected files and complexity. Edit any field by chatting with it. Every save is versioned with a field-by-field diff and one-click restore. Per-project ticket templates, threaded comments, and export to Markdown, JSON, Jira or GitHub Issues.
+- **Planning.** Kanban board, backlog, sprints, story points and velocity.
+- **AI pipeline.** Flags on a ticket drive the next step: *define* expands the spec, *plan* writes the implementation plan, *develop* sends the ticket to a coding-agent worker that implements it on its own branch, and *test* runs a Playwright end-to-end suite against a live build. The ticket then goes to review for a person to merge.
+- **Worker satellites.** Separate machines register as workers, poll the job queue, run the coding agent or E2E tests, and stream events back. A hub shows active and past sessions live.
+- **Compliance drafts.** Generates draft documents for ISO 9001, ISO 27001 and ISO 13485 / IEC 62304 from the codebase analysis.
+- **Integrations.** An MCP server for IDEs and agents, scoped API keys, outbound webhooks and git history with diffs.
+- **Team features.** Login with admin and user roles, XP for everyday actions, around 100 achievements, 12 levels and a per-project leaderboard.
+- **Backups.** Hot SQLite backups created before every update and on demand, downloadable and restorable from the UI.
 
-## Key Capabilities
+## Tech stack
 
-- **Ask your codebase anything** — query any part of the project in natural language and receive answers grounded in the actual source code, not generic documentation
-- **Automatic documentation** — analyses the repository and generates structured technical docs covering architecture, APIs, data models, and module relationships; keeps them current as the code evolves
-- **AI-assisted ticket creation** — describe a feature or bug in plain language and receive a fully structured ticket with acceptance criteria, implementation steps, affected files, and complexity estimate
-- **Human-in-the-loop AI pipeline** — a four-stage workflow (Define → Plan → Develop → Review) where AI drafts each step and a human approves before proceeding; the AI can write and commit code to a branch, then hand off to human review
-- **Full project management suite** — kanban board, sprint planning, backlog, story points, velocity tracking, comments, and Jira / GitHub Issues export
-- **Compliance document generation** — produces certification-ready documentation (ISO, SOC2, and others) derived directly from codebase analysis
-- **Team engagement** — built-in XP system, 100 achievements, and a leaderboard that make day-to-day development measurably more motivating
+Python · FastAPI · SQLite · ChromaDB · tree-sitter · GitPython · Playwright · Ollama · Anthropic Claude · Google Gemini · React · Vite · Tailwind CSS · MCP · systemd · Nginx / Apache
 
-## Tech Highlights
+## How it works
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Python, FastAPI |
-| Frontend | React, Tailwind CSS |
-| AI / LLM | Ollama (local), Anthropic Claude, Google Gemini |
-| Semantic search | Vector database (on-premises) |
-| Code understanding | Static analysis + AST parsing |
-| Version control | Git integration |
-| Deployment | Self-hosted Linux server, systemd service |
+```
+Browser ──► Nginx / Apache
+              ├── React app
+              └── FastAPI ──► scanner ─► chunker ─► embeddings ─► ChromaDB
+                    │         RAG chat, doc generator, ticket engine
+                    │         pipeline (define ► plan ► develop ► test)
+                    │                                   │
+                    │                            job queue
+                    │                                   ▼
+                    │                        worker satellites
+                    │                     (coding agent, Playwright)
+                    └──► Ollama / Claude / Gemini (chosen per task type)
+```
 
-## Screenshots
+One main database holds users, projects, settings, workers and gamification; each project has its own database for scans, docs, tickets, sprints and pipeline jobs, plus its own vector index and generated docs. The coding-agent step works with MundaForge, a separate local coding agent by the same author.
 
-> *Screenshots available on request or at [project URL if any]*
+## Design principles
 
-## Status & Availability
+- **Your code stays on your server.** Scanning, embeddings and the default models run locally; cloud models are opt-in per task type.
+- **A person approves each stage.** The pipeline advances one flag at a time, and implemented code lands on a branch for review, never directly on the main line.
+- **Tests earn their place.** Generated E2E specs start as provisional and are promoted only after passing twice in a row.
 
-The platform is in active beta, running in production on a private server. Core features — codebase scanning, RAG chat, documentation generation, ticket management, sprint planning, and the AI development pipeline — are fully functional. Ongoing work focuses on expanding framework support, refining the AI pipeline, and adding deeper integrations with external project management tools.
+## Availability
 
-This is a proprietary project. It can be licensed, demonstrated, or adapted for specific client needs. A full code review is available under NDA.
+The source code is not public. AI Product Manager is in beta and available for licensing, custom deployment or white-label adaptation. Get in touch via [munda.si](https://www.munda.si/#contact).
 
-## Interested?
+## License
 
-This is a proprietary project by **Munda Plus d.o.o.**  
-The full codebase is available for review upon request.
+Proprietary. © 2026 MUNDA PLUS d.o.o. All rights reserved. See [LICENSE](LICENSE).
 
-📧 marko@munda.si  
-🌐 [munda.si](https://www.munda.si)
+## Author
+
+Built by [Marko Munda](https://www.munda.si/) · [Munda Plus](https://github.com/MundaPlus)
